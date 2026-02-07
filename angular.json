@@ -6,5 +6,31 @@
   },
   "newProjectRoot": "projects",
   "projects": {
+    "signal-query": {
+      "projectType": "library",
+      "root": "projects/signal-query",
+      "sourceRoot": "projects/signal-query/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/signal-query/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/signal-query/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "projects/signal-query/tsconfig.spec.json"
+          }
+        }
+      }
+    }
   }
 }

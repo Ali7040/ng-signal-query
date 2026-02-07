@@ -11,6 +11,11 @@
     "skipLibCheck": true,
     "isolatedModules": true,
     "experimentalDecorators": true,
+    "paths": {
+      "signal-query": [
+        "./dist/signal-query"
+      ]
+    },
     "importHelpers": true,
     "target": "ES2022",
     "module": "preserve"
@@ -21,5 +26,13 @@
     "strictInputAccessModifiers": true,
     "strictTemplates": true
   },
-  "files": []
+  "files": [],
+  "references": [
+    {
+      "path": "./projects/signal-query/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/signal-query/tsconfig.spec.json"
+    }
+  ]
 }
