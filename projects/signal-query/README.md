@@ -1,52 +1,276 @@
-# SignalQuery
+# 🎯 ng-signal-query
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.1.0.
+[![npm version](https://img.shields.io/npm/v/@ali7040/ng-singal-query?style=flat-square)](https://www.npmjs.com/package/@ali7040/ng-singal-query)
+[![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-lightpink?style=flat-square)](https://github.com/sponsors/ali7040)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](./LICENSE)
+[![Angular](https://img.shields.io/badge/Angular-21.1.0-red.svg?style=flat-square)](https://angular.io/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg?style=flat-square)](https://www.typescriptlang.org/)
 
-## Code scaffolding
+A powerful, type-safe querying library for Angular applications built with signals. Manage server state, infinite queries, mutations, and caching with elegance and performance.
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## ✨ Features
 
-```bash
-ng generate component component-name
-```
+- 🚀 **Signal-Driven Architecture** - Leverage Angular signals for reactive state management
+- 🔄 **Server State Management** - Queries, mutations, and automatic caching
+- ∞ **Infinite Queries** - Seamless pagination with automatic data accumulation
+- 🎯 **Type-Safe** - Full TypeScript support with strict typing
+- 🛠️ **DevTools Integration** - Built-in debugging component for development
+- 📦 **Lightweight** - Minimal bundle size with zero external dependencies (except Angular & RxJS)
+- 🔌 **Adapter Pattern** - Custom adapters for different HTTP clients
+- 💾 **Smart Caching** - Automatic query result caching with configurable strategies
+- 🌐 **SSR Ready** - Server-side rendering support with hydration
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the library, run:
-
-```bash
-ng build signal-query
-```
-
-This command will compile your project, and the build artifacts will be placed in the `dist/` directory.
-
-### Publishing the Library
-
-Once the project is built, you can publish your library by following these steps:
-
-1. Navigate to the `dist` directory:
-   ```bash
-   cd dist/signal-query
-   ```
-
-2. Run the `npm publish` command to publish your library to the npm registry:
-   ```bash
-   npm publish
-   ```
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+## 📦 Installation
 
 ```bash
-ng test
+npm install @ali7040/ng-singal-query
 ```
+
+Or with yarn:
+
+```bash
+yarn add @ali7040/ng-singal-query
+```
+
+Or with pnpm:
+
+```bash
+pnpm add @ali7040/ng-singal-query
+```
+
+### Requirements
+
+- Angular >= 21.1.0
+- TypeScript >= 5.9
+- RxJS >= 7.8
+
+## 🚀 Quick Start
+
+### 1. Import the Module
+
+```typescript
+import { QueryClient } from '@ali7040/ng-singal-query';
+
+@Component({
+  selector: 'app-root',
+  template: `
+    <div *ngIf="users(); else loading">
+      <div *ngFor="let user of users()">{{ user.name }}</div>
+    </div>
+    <ng-template #loading>Loading...</ng-template>
+  `,
+  standalone: true,
+})
+export class AppComponent {
+  private queryClient = inject(QueryClient);
+
+  users = this.queryClient.createQuery({
+    queryKey: ['users'],
+    queryFn: () => fetch('/api/users').then(r => r.json()),
+  });
+}
+```
+
+### 2. Create Queries
+
+```typescript
+// Simple query
+const users = this.queryClient.createQuery({
+  queryKey: ['users'],
+  queryFn: () => this.http.get('/api/users'),
+  staleTime: 5 * 60 * 1000, // 5 minutes
+});
+
+// Parametized query
+const user = signal('1');
+const userDetails = this.queryClient.createSignalQuery({
+  queryKey: computed(() => ['user', user()]),
+  queryFn: async () => this.http.get(`/api/users/${user()}`),
+});
+```
+
+### 3. Create Mutations
+
+```typescript
+const createUser = this.queryClient.createMutation({
+  mutationFn: (data: User) => this.http.post('/api/users', data),
+  onSuccess: () => {
+    this.queryClient.invalidateQueries(['users']);
+  },
+});
+
+// Use in template
+<button (click)="createUser.mutate({ name: 'John' })">
+  {{ createUser.status() === 'pending' ? 'Creating...' : 'Create User' }}
+</button>
+```
+
+### 4. Infinite Queries
+
+```typescript
+const infiniteUsers = this.queryClient.createInfiniteQuery({
+  queryKey: ['users', 'infinite'],
+  queryFn: ({ pageParam = 0 }) =>
+    this.http.get(`/api/users?page=${pageParam}`),
+  getNextPageParam: (lastPage) => lastPage.nextCursor,
+});
+
+// Load more
+<button (click)="infiniteUsers.fetchNextPage()">
+  Load More
+</button>
+```
+
+## 📚 API Documentation
+
+### QueryClient
+
+Main service for managing all queries and mutations.
+
+```typescript
+// Create a query
+createQuery(options: CreateQueryOptions)
+
+// Create a signal-based query
+createSignalQuery(options: CreateSignalQuery)
+
+// Create an infinite query
+createInfiniteQuery(options: CreateInfiniteQueryOptions)
+
+// Create a mutation
+createMutation(options: CreateMutationOptions)
+
+// Invalidate queries
+invalidateQueries(queryKey: QueryKey)
+
+// Refetch queries
+refetchQueries(queryKey: QueryKey)
+
+// Clear all caches
+clearCache()
+```
+
+### Query State
+
+```typescript
+interface QueryState {
+  data: TData | null;
+  error: Error | null;
+  status: 'pending' | 'error' | 'success';
+  isLoading: boolean;
+  isError: boolean;
+  isSuccess: boolean;
+}
+```
+
+### Mutation State
+
+```typescript
+interface MutationState {
+  data: TData | null;
+  error: Error | null;
+  status: 'idle' | 'pending' | 'error' | 'success';
+  isPending: boolean;
+  isError: boolean;
+  isSuccess: boolean;
+}
+```
+
+## 🔧 Development
+
+### Building
+
+```bash
+npm run build
+```
+
+### Running Tests
+
+```bash
+npm run test
+```
+
+### Running Examples
+
+```bash
+npm run start
+```
+
+Browse to `http://localhost:4200`
+
+## 🛠️ Examples
+
+Check the [examples directory](./examples) for complete working examples:
+
+- [Simple Query Example](./examples/signal-query-example.component.ts)
+- [Infinite Query Example](./examples/infinite-query-example.component.ts)
+- [Create User Mutation](./examples/create-user.component.ts)
+- [DevTools Integration](./examples/devtools-example.component.ts)
+
+## 📖 DevTools
+
+Monitor your queries and mutations in real-time:
+
+```typescript
+import { SignalQueryDevtoolsComponent } from '@ali7040/ng-singal-query';
+
+@Component({
+  selector: 'app-root',
+  template: `
+    <app-main></app-main>
+    <signal-query-devtools *ngIf="isDev"></signal-query-devtools>
+  `,
+  imports: [SignalQueryDevtoolsComponent],
+})
+export class AppComponent {
+  isDev = !environment.production;
+}
+```
+
+## 🚀 Live Testing
+
+Try the library in action:
+
+- **StackBlitz Demo**: [Coming Soon]
+- **CodeSandbox**: [Coming Soon]
+- **Documentation**: [https://github.com/ali7040/ng-signal-query](https://github.com/ali7040/ng-signal-query)
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guide](./CONTRIBUTING.md) for detailed instructions.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Built with [Angular 21.1](https://angular.io/)
+- Inspired by [TanStack Query](https://tanstack.com/query)
+- Type-safe with [TypeScript 5.9](https://www.typescriptlang.org/)
+
+## 📮 Support
+
+- 🐛 [Report Bugs](https://github.com/ali7040/ng-signal-query/issues)
+- 💡 [Request Features](https://github.com/ali7040/ng-signal-query/issues)
+- 📧 [Email Support](mailto:support@example.com)
+
+## ❤️ Sponsor
+
+If you want to support this project, you can sponsor ongoing development:
+
+- [GitHub Sponsors](https://github.com/sponsors/ali7040)
+
+## 🔗 Useful Links
+
+- [NPM Package](https://www.npmjs.com/package/@ali7040/ng-singal-query)
+- [GitHub Repository](https://github.com/ali7040/ng-signal-query)
+- [Angular Documentation](https://angular.io/docs)
+- [RxJS Documentation](https://rxjs.dev/)
+
+---
+
+**Made with ❤️ by Ali**
 
 ## Running end-to-end tests
 

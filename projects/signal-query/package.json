@@ -1,5 +1,5 @@
 {
-  "name": "signal-query",
+  "name": "@ali7040/ng-singal-query",
   "version": "0.0.1",
   "peerDependencies": {
     "@angular/common": "^21.1.0",
