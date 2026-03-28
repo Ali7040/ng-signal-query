@@ -1,6 +1,17 @@
 {
   "name": "@ali7040/ng-singal-query",
   "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ali7040/ng-signal-query.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ali7040/ng-signal-query/issues"
+  },
+  "homepage": "https://github.com/ali7040/ng-signal-query#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "peerDependencies": {
     "@angular/common": "^21.1.0",
     "@angular/core": "^21.1.0"

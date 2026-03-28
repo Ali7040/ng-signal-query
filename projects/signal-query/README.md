@@ -38,6 +38,35 @@ Or with pnpm:
 pnpm add @ali7040/ng-singal-query
 ```
 
+## 🐙 GitHub Packages
+
+You can also publish/install this package from GitHub Packages.
+
+### Publish to GitHub Packages
+
+1. Create a GitHub Personal Access Token (classic) with:
+- `write:packages`
+- `read:packages`
+- `repo` (only if repository is private)
+
+2. Login to GitHub npm registry:
+
+```bash
+npm login --scope=@ali7040 --auth-type=legacy --registry=https://npm.pkg.github.com
+```
+
+3. Publish:
+
+```bash
+npm run release:github
+```
+
+### Install from GitHub Packages
+
+```bash
+npm install @ali7040/ng-singal-query --registry=https://npm.pkg.github.com
+```
+
 ### Requirements
 
 - Angular >= 21.1.0

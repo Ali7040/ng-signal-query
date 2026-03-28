@@ -5,8 +5,11 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build:lib": "ng build signal-query",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "release:npm": "npm run build:lib && npm publish ./dist/signal-query --access public",
+    "release:github": "npm run build:lib && npm publish ./dist/signal-query --registry=https://npm.pkg.github.com"
   },
   "prettier": {
     "printWidth": 100,
