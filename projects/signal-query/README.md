@@ -1,6 +1,6 @@
 # 🎯 ng-signal-query
 
-[![npm version](https://img.shields.io/npm/v/@ali7040/ng-singal-query?style=flat-square)](https://www.npmjs.com/package/@ali7040/ng-singal-query)
+[![npm version](https://img.shields.io/npm/v/@ali7040/ng-signal-query?style=flat-square)](https://www.npmjs.com/package/@ali7040/ng-signal-query)
 [![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-lightpink?style=flat-square)](https://github.com/sponsors/ali7040)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](./LICENSE)
 [![Angular](https://img.shields.io/badge/Angular-21.1.0-red.svg?style=flat-square)](https://angular.io/)
@@ -23,19 +23,19 @@ A powerful, type-safe querying library for Angular applications built with signa
 ## 📦 Installation
 
 ```bash
-npm install @ali7040/ng-singal-query
+npm install @ali7040/ng-signal-query
 ```
 
 Or with yarn:
 
 ```bash
-yarn add @ali7040/ng-singal-query
+yarn add @ali7040/ng-signal-query
 ```
 
 Or with pnpm:
 
 ```bash
-pnpm add @ali7040/ng-singal-query
+pnpm add @ali7040/ng-signal-query
 ```
 
 ## 🐙 GitHub Packages
@@ -64,7 +64,7 @@ npm run release:github
 ### Install from GitHub Packages
 
 ```bash
-npm install @ali7040/ng-singal-query --registry=https://npm.pkg.github.com
+npm install @ali7040/ng-signal-query --registry=https://npm.pkg.github.com
 ```
 
 ### Requirements
@@ -78,7 +78,7 @@ npm install @ali7040/ng-singal-query --registry=https://npm.pkg.github.com
 ### 1. Import the Module
 
 ```typescript
-import { QueryClient } from '@ali7040/ng-singal-query';
+import { QueryClient } from '@ali7040/ng-signal-query';
 
 @Component({
   selector: 'app-root',
@@ -241,7 +241,7 @@ Check the [examples directory](./examples) for complete working examples:
 Monitor your queries and mutations in real-time:
 
 ```typescript
-import { SignalQueryDevtoolsComponent } from '@ali7040/ng-singal-query';
+import { SignalQueryDevtoolsComponent } from '@ali7040/ng-signal-query';
 
 @Component({
   selector: 'app-root',
@@ -292,7 +292,7 @@ If you want to support this project, you can sponsor ongoing development:
 
 ## 🔗 Useful Links
 
-- [NPM Package](https://www.npmjs.com/package/@ali7040/ng-singal-query)
+- [NPM Package](https://www.npmjs.com/package/@ali7040/ng-signal-query)
 - [GitHub Repository](https://github.com/ali7040/ng-signal-query)
 - [Angular Documentation](https://angular.io/docs)
 - [RxJS Documentation](https://rxjs.dev/)
