@@ -278,7 +278,32 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Inspired by [TanStack Query](https://tanstack.com/query)
 - Type-safe with [TypeScript 5.9](https://www.typescriptlang.org/)
 
-## 📮 Support
+## �️ Roadmap & Future Features
+
+We're committed to evolving ng-signal-query to meet production-grade requirements. Here are planned features:
+
+### High Priority ⭐
+- **MutationConcurrencyStrategy** - Control mutation execution patterns (similar to RxJS operators):
+  - `mergeMap` - Execute all mutations in parallel (current behavior)
+  - `concatMap` - Queue mutations sequentially
+  - `switchMap` - Cancel previous mutation when new one starts
+  - `exhaustMap` - Ignore new mutations while one is in flight
+  - This prevents server state desynchronization when multiple mutations happen concurrently
+  
+- **Better Error Handling** - Enhanced error boundaries and recovery patterns
+- **Advanced Cache Invalidation Strategies** - More granular control over cache lifecycle
+- **Offline Support** - Queue mutations while offline, sync when reconnected
+
+### Medium Priority 📋
+- **Request Deduplication** - Automatic duplicate request elimination within a time window
+- **Pause/Resume Queries** - Ability to pause and resume query execution
+- **Query Dependencies** - Automatic refetch when dependent query data changes
+- **Custom Retry Strategies** - Plugin system for complex retry logic
+
+### Community Feedback Welcome
+Have ideas? [Open an issue](https://github.com/ali7040/ng-signal-query/issues) or [submit a PR](./CONTRIBUTING.md)!
+
+## �📮 Support
 
 - 🐛 [Report Bugs](https://github.com/ali7040/ng-signal-query/issues)
 - 💡 [Request Features](https://github.com/ali7040/ng-signal-query/issues)
@@ -294,6 +319,7 @@ If you want to support this project, you can sponsor ongoing development:
 
 - [NPM Package](https://www.npmjs.com/package/@ali7040/ng-signal-query)
 - [GitHub Repository](https://github.com/ali7040/ng-signal-query)
+- [Project Roadmap](./ROADMAP.md)
 - [Angular Documentation](https://angular.io/docs)
 - [RxJS Documentation](https://rxjs.dev/)
 
