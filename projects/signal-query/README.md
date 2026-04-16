@@ -121,18 +121,50 @@ const userDetails = this.queryClient.createSignalQuery({
 ### 3. Create Mutations
 
 ```typescript
-const createUser = this.queryClient.createMutation({
+const createUser = createMutation({
   mutationFn: (data: User) => this.http.post('/api/users', data),
-  onSuccess: () => {
-    this.queryClient.invalidateQueries(['users']);
-  },
+  invalidateQueries: [['users']],
+  onSuccess: (data) => console.log('Created:', data),
 });
 
 // Use in template
 <button (click)="createUser.mutate({ name: 'John' })">
-  {{ createUser.status() === 'pending' ? 'Creating...' : 'Create User' }}
+  {{ createUser.isLoading() ? 'Creating...' : 'Create User' }}
 </button>
 ```
+
+### 3b. Mutation Concurrency Strategy
+
+Control how overlapping `mutate()` calls are handled — inspired by RxJS flattening operators:
+
+```typescript
+import { createMutation } from '@ali7040/ng-signal-query';
+
+// Prevent duplicate form submissions
+const submitForm = createMutation({
+  mutationFn: (form: FormData) => api.submit(form),
+  concurrencyStrategy: 'exhaust', // ignore clicks while submitting
+});
+
+// Auto-save: only keep the latest
+const autoSave = createMutation({
+  mutationFn: (draft: Draft) => api.saveDraft(draft),
+  concurrencyStrategy: 'switch', // discard stale saves
+});
+
+// Ordered steps: execute one at a time
+const processStep = createMutation({
+  mutationFn: (step: Step) => api.process(step),
+  concurrencyStrategy: 'concat', // queue in order
+});
+```
+
+| Strategy | RxJS equivalent | Behavior |
+|----------|-----------------|----------|
+| `merge` | `mergeMap` | Run all in parallel (default) |
+| `concat` | `concatMap` | Queue and run sequentially |
+| `switch` | `switchMap` | Discard previous, keep latest |
+| `exhaust` | `exhaustMap` | Ignore new while running |
 
 ### 4. Infinite Queries
 
@@ -195,13 +227,20 @@ interface QueryState {
 ### Mutation State
 
 ```typescript
-interface MutationState {
+type MutationConcurrencyStrategy = 'merge' | 'concat' | 'switch' | 'exhaust';
+
+interface MutationState<TData> {
   data: TData | null;
-  error: Error | null;
-  status: 'idle' | 'pending' | 'error' | 'success';
-  isPending: boolean;
-  isError: boolean;
-  isSuccess: boolean;
+  error: unknown;
+  status: 'idle' | 'loading' | 'success' | 'error';
+}
+
+interface MutationResult<TInput, TOutput> {
+  data: Signal<TOutput | null>;
+  error: Signal<unknown>;
+  status: Signal<MutationStatus>;
+  isLoading: Signal<boolean>;
+  mutate: (input: TInput) => Promise<void>;
 }
 ```
 
@@ -283,12 +322,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 We're committed to evolving ng-signal-query to meet production-grade requirements. Here are planned features:
 
 ### High Priority ⭐
-- **MutationConcurrencyStrategy** - Control mutation execution patterns (similar to RxJS operators):
-  - `mergeMap` - Execute all mutations in parallel (current behavior)
-  - `concatMap` - Queue mutations sequentially
-  - `switchMap` - Cancel previous mutation when new one starts
-  - `exhaustMap` - Ignore new mutations while one is in flight
-  - This prevents server state desynchronization when multiple mutations happen concurrently
+- ~~**MutationConcurrencyStrategy**~~ ✅ **Shipped!** Control mutation execution with `concurrencyStrategy: 'merge' | 'concat' | 'switch' | 'exhaust'`. See [DOCS.md](./DOCS.md) for details.
   
 - **Better Error Handling** - Enhanced error boundaries and recovery patterns
 - **Advanced Cache Invalidation Strategies** - More granular control over cache lifecycle
