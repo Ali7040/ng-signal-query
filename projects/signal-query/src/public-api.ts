@@ -18,6 +18,7 @@ export type { CreateInfiniteQueryOptions, InfiniteQueryResult } from './lib/quer
 // Mutation
 export { createMutation } from './lib/mutation/create-mutation';
 export type {
+  MutationConcurrencyStrategy,
   MutationState,
   MutationStatus,
   MutationContext,
