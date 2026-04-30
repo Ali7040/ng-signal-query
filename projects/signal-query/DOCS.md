@@ -77,6 +77,68 @@ mutation = createMutation({
 mutation.mutate({ name: 'Ali' });
 ```
 
+### Concurrency Strategy
+
+Control how overlapping `mutate()` calls behave. Inspired by RxJS flattening operators.
+
+```ts
+mutation = createMutation({
+  mutationFn: (data) => api.save(data),
+  concurrencyStrategy: 'switch', // 'merge' | 'concat' | 'switch' | 'exhaust'
+});
+```
+
+| Strategy   | RxJS equivalent | Behavior                                                  |
+|------------|-----------------|-----------------------------------------------------------|
+| `merge`    | `mergeMap`      | Run all mutations in parallel (default).                  |
+| `concat`   | `concatMap`     | Queue mutations and execute one at a time, in order.      |
+| `switch`   | `switchMap`     | Discard results of previous in-flight mutation on new call. |
+| `exhaust`  | `exhaustMap`    | Ignore new `mutate()` calls while one is already running. |
+
+#### merge (default)
+
+Every call fires immediately. All run in parallel. Suitable for independent fire-and-forget operations.
+
+```ts
+createMutation({
+  mutationFn: (id) => api.track(id),
+  concurrencyStrategy: 'merge',
+});
+```
+
+#### concat
+
+Mutations are queued and executed sequentially. Each mutation waits for the previous one to complete (success or error) before starting.
+
+```ts
+createMutation({
+  mutationFn: (step) => api.processStep(step),
+  concurrencyStrategy: 'concat',
+});
+```
+
+#### switch
+
+When a new `mutate()` call arrives while a previous mutation is in-flight, the previous mutation's result is discarded. Only the latest mutation updates state and fires callbacks.
+
+```ts
+createMutation({
+  mutationFn: (query) => api.search(query),
+  concurrencyStrategy: 'switch',
+});
+```
+
+#### exhaust
+
+While a mutation is running, any new `mutate()` calls are silently ignored. Useful for preventing duplicate submissions.
+
+```ts
+createMutation({
+  mutationFn: (form) => api.submitForm(form),
+  concurrencyStrategy: 'exhaust',
+});
+```
+
 ### Optimistic Updates
 
 ```ts

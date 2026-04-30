@@ -15,7 +15,6 @@ import { createQuery } from '../src/lib/query/create-query';
     <p>Open the DevTools panel in the bottom-right corner</p>
     <p>Status: {{ example.status() }}</p>
 
-    <!-- Drop this anywhere in your app (root component recommended) -->
     <signal-query-devtools />
   `,
 })

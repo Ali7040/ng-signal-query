@@ -1,5 +1,15 @@
 import { Signal } from '@angular/core';
 
+/**
+ * Controls how concurrent mutation calls are handled.
+ *
+ * - `merge`   — Run all mutations in parallel (default, like RxJS `mergeMap`).
+ * - `concat`  — Queue mutations and execute them one at a time in order (like `concatMap`).
+ * - `switch`  — Cancel/ignore previous in-flight mutation when a new one starts (like `switchMap`).
+ * - `exhaust` — Ignore new mutation calls while one is already running (like `exhaustMap`).
+ */
+export type MutationConcurrencyStrategy = 'merge' | 'concat' | 'switch' | 'exhaust';
+
 export type MutationStatus = 'idle' | 'loading' | 'success' | 'error';
 
 export interface MutationContext {
@@ -18,6 +28,12 @@ export interface CreateMutationOptions<TInput, TOutput> {
   onSuccess?: (data: TOutput) => void;
   onError?: (error: unknown) => void;
   invalidateQueries?: readonly unknown[][];
+
+  /**
+   * Controls how overlapping mutation calls are handled.
+   * @default 'merge'
+   */
+  concurrencyStrategy?: MutationConcurrencyStrategy;
 
   /**
    * Called before the mutation runs. Use `queryClient.setQueryData()`

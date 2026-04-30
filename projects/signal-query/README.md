@@ -121,18 +121,50 @@ const userDetails = this.queryClient.createSignalQuery({
 ### 3. Create Mutations
 
 ```typescript
-const createUser = this.queryClient.createMutation({
+const createUser = createMutation({
   mutationFn: (data: User) => this.http.post('/api/users', data),
-  onSuccess: () => {
-    this.queryClient.invalidateQueries(['users']);
-  },
+  invalidateQueries: [['users']],
+  onSuccess: (data) => console.log('Created:', data),
 });
 
 // Use in template
 <button (click)="createUser.mutate({ name: 'John' })">
-  {{ createUser.status() === 'pending' ? 'Creating...' : 'Create User' }}
+  {{ createUser.isLoading() ? 'Creating...' : 'Create User' }}
 </button>
 ```
+
+### 3b. Mutation Concurrency Strategy
+
+Control how overlapping `mutate()` calls are handled — inspired by RxJS flattening operators:
+
+```typescript
+import { createMutation } from '@ali7040/ng-signal-query';
+
+// Prevent duplicate form submissions
+const submitForm = createMutation({
+  mutationFn: (form: FormData) => api.submit(form),
+  concurrencyStrategy: 'exhaust', // ignore clicks while submitting
+});
+
+// Auto-save: only keep the latest
+const autoSave = createMutation({
+  mutationFn: (draft: Draft) => api.saveDraft(draft),
+  concurrencyStrategy: 'switch', // discard stale saves
+});
+
+// Ordered steps: execute one at a time
+const processStep = createMutation({
+  mutationFn: (step: Step) => api.process(step),
+  concurrencyStrategy: 'concat', // queue in order
+});
+```
+
+| Strategy | RxJS equivalent | Behavior |
+|----------|-----------------|----------|
+| `merge` | `mergeMap` | Run all in parallel (default) |
+| `concat` | `concatMap` | Queue and run sequentially |
+| `switch` | `switchMap` | Discard previous, keep latest |
+| `exhaust` | `exhaustMap` | Ignore new while running |
 
 ### 4. Infinite Queries
 
@@ -195,13 +227,20 @@ interface QueryState {
 ### Mutation State
 
 ```typescript
-interface MutationState {
+type MutationConcurrencyStrategy = 'merge' | 'concat' | 'switch' | 'exhaust';
+
+interface MutationState<TData> {
   data: TData | null;
-  error: Error | null;
-  status: 'idle' | 'pending' | 'error' | 'success';
-  isPending: boolean;
-  isError: boolean;
-  isSuccess: boolean;
+  error: unknown;
+  status: 'idle' | 'loading' | 'success' | 'error';
+}
+
+interface MutationResult<TInput, TOutput> {
+  data: Signal<TOutput | null>;
+  error: Signal<unknown>;
+  status: Signal<MutationStatus>;
+  isLoading: Signal<boolean>;
+  mutate: (input: TInput) => Promise<void>;
 }
 ```
 
@@ -278,7 +317,27 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Inspired by [TanStack Query](https://tanstack.com/query)
 - Type-safe with [TypeScript 5.9](https://www.typescriptlang.org/)
 
-## 📮 Support
+## �️ Roadmap & Future Features
+
+We're committed to evolving ng-signal-query to meet production-grade requirements. Here are planned features:
+
+### High Priority ⭐
+- ~~**MutationConcurrencyStrategy**~~ ✅ **Shipped!** Control mutation execution with `concurrencyStrategy: 'merge' | 'concat' | 'switch' | 'exhaust'`. See [DOCS.md](./DOCS.md) for details.
+  
+- **Better Error Handling** - Enhanced error boundaries and recovery patterns
+- **Advanced Cache Invalidation Strategies** - More granular control over cache lifecycle
+- **Offline Support** - Queue mutations while offline, sync when reconnected
+
+### Medium Priority 📋
+- **Request Deduplication** - Automatic duplicate request elimination within a time window
+- **Pause/Resume Queries** - Ability to pause and resume query execution
+- **Query Dependencies** - Automatic refetch when dependent query data changes
+- **Custom Retry Strategies** - Plugin system for complex retry logic
+
+### Community Feedback Welcome
+Have ideas? [Open an issue](https://github.com/ali7040/ng-signal-query/issues) or [submit a PR](./CONTRIBUTING.md)!
+
+## �📮 Support
 
 - 🐛 [Report Bugs](https://github.com/ali7040/ng-signal-query/issues)
 - 💡 [Request Features](https://github.com/ali7040/ng-signal-query/issues)
@@ -294,6 +353,7 @@ If you want to support this project, you can sponsor ongoing development:
 
 - [NPM Package](https://www.npmjs.com/package/@ali7040/ng-signal-query)
 - [GitHub Repository](https://github.com/ali7040/ng-signal-query)
+- [Project Roadmap](./ROADMAP.md)
 - [Angular Documentation](https://angular.io/docs)
 - [RxJS Documentation](https://rxjs.dev/)
 

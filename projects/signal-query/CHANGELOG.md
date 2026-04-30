@@ -8,22 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Features and changes being developed
-
-### Changed
-- Modifications to existing functionality
-
-### Deprecated
-- Soon-to-be removed features
-
-### Removed
-- Removed features
-
-### Fixed
-- Bug fixes
-
-### Security
-- Security fixes and improvements
+- **MutationConcurrencyStrategy** — new `concurrencyStrategy` option for `createMutation()` controlling how overlapping `mutate()` calls are handled.
+  - `merge` (default): run all mutations in parallel (preserves existing behavior).
+  - `concat`: queue mutations and execute one at a time, in order.
+  - `switch`: discard results of previous in-flight mutation when a new call arrives.
+  - `exhaust`: ignore new `mutate()` calls while one is already running.
+- Exported `MutationConcurrencyStrategy` type from public API.
+- Comprehensive unit tests for all 4 concurrency strategy modes including race-condition and optimistic-update compatibility tests.
 
 ---
 
