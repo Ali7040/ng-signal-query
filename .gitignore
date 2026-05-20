@@ -11,6 +11,11 @@
 npm-debug.log
 yarn-error.log
 
+# Environment
+.env
+.env.*
+!.env.example
+
 # IDEs and editors
 .idea/
 .project
@@ -42,4 +47,3 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
-config.bat

