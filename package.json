@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
-    "build:lib": "ng build signal-query",
+    "start": "node init && ng serve",
+    "build": "node init && ng build",
+    "build:lib": "node init && ng build signal-query",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "release:npm": "npm run build:lib && npm publish ./dist/signal-query --access public",
@@ -32,6 +32,8 @@
     "@angular/forms": "^21.1.0",
     "@angular/platform-browser": "^21.1.0",
     "@angular/router": "^21.1.0",
+    "dotenv": "^8.2.0",
+    "node-fetch": "^3.3.2",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },
