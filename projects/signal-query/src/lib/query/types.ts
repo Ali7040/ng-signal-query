@@ -1,4 +1,5 @@
 import { Signal } from '@angular/core';
+import { RetryValue, RetryDelayValue } from '../core/retry';
 
 export type QueryStatus = 'idle' | 'loading' | 'success' | 'error';
 
@@ -9,9 +10,34 @@ export interface QueryState<T> {
   updatedAt: number;
 }
 
+/**
+ * Context passed to a query fetcher. The `signal` is aborted when the query is
+ * superseded (e.g. the key changes) or a fresh fetch cancels an in-flight one.
+ * Pass it to `fetch`/`HttpClient` to cancel stale requests.
+ */
+export interface QueryFunctionContext {
+  signal: AbortSignal;
+}
+
 export interface CreateQueryOptions<T> {
   key: readonly unknown[];
-  fetcher: () => Promise<T>;
+
+  /**
+   * Fetches the data. Receives a {@link QueryFunctionContext} with an
+   * `AbortSignal`. Existing zero-argument fetchers remain compatible.
+   */
+  fetcher: (context: QueryFunctionContext) => Promise<T>;
+
+  /**
+   * Number of retry attempts on failure (or a predicate).
+   * Default: 3. Use `false` / `0` to disable.
+   */
+  retry?: RetryValue;
+
+  /**
+   * Delay before each retry. Default: exponential backoff (1s, 2s, 4s … max 30s).
+   */
+  retryDelay?: RetryDelayValue;
 
   /**
    * Time in ms that data is considered fresh.

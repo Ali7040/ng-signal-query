@@ -3,8 +3,6 @@ import {
   computed,
   inject,
   effect,
-  WritableSignal,
-  DestroyRef,
   untracked,
 } from '@angular/core';
 import {
@@ -13,6 +11,9 @@ import {
   QueryState,
 } from './types';
 import { QueryClient } from '../core/query-client';
+import { CacheEntry } from '../core/query-cache';
+import { executeQueryFetch } from '../core/fetch-query';
+import { defaultRetryDelay } from '../core/retry';
 import { hashKey } from '../core/query-key';
 
 function createInitialState<T>(): QueryState<T> {
@@ -32,94 +33,84 @@ function createInitialState<T>(): QueryState<T> {
  * const userId = signal(1);
  * const user = createSignalQuery(() => ({
  *   key: ['user', userId()],
- *   fetcher: () => fetchUser(userId()),
+ *   fetcher: ({ signal }) => fetchUser(userId(), { signal }),
  * }));
  * ```
  *
- * When `userId` changes, the query automatically re-executes with the new key/fetcher.
+ * When `userId` changes, the query switches to the new key's shared cache entry,
+ * aborts the previous key's in-flight request, and fetches if the data is stale.
  */
 export function createSignalQuery<T>(
   optionsFn: () => CreateQueryOptions<T>
 ): QueryResult<T> {
   const client = inject(QueryClient);
-  const destroyRef = inject(DestroyRef);
   const cache = client.getCache();
 
-  const state = signal<QueryState<T>>(createInitialState<T>());
+  // The cache entry for the current key. Swapped when the key changes.
+  const activeEntry = signal<CacheEntry<T> | null>(null);
   let currentKey: string | null = null;
-  let destroyed = false;
 
-  destroyRef.onDestroy(() => {
-    destroyed = true;
-  });
-
-  const fetchData = async (opts: CreateQueryOptions<T>, targetState: WritableSignal<QueryState<T>>) => {
-    targetState.update(s => ({
-      ...s,
-      status: 'loading',
-      error: null,
-    }));
-
-    try {
-      const data = await opts.fetcher();
-      if (!destroyed) {
-        targetState.set({
-          data,
-          error: null,
-          status: 'success',
-          updatedAt: Date.now(),
-        });
-      }
-    } catch (error) {
-      if (!destroyed) {
-        targetState.update(s => ({
-          ...s,
-          error,
-          status: 'error',
-        }));
-      }
+  const resolveEntry = (opts: CreateQueryOptions<T>): CacheEntry<T> => {
+    let entry = cache.get<T>(opts.key);
+    if (!entry) {
+      cache.set(
+        opts.key,
+        signal<QueryState<T>>(createInitialState<T>()),
+        opts.cacheTime ?? 5 * 60 * 1000
+      );
+      entry = cache.get<T>(opts.key)!;
     }
+    return entry;
   };
 
-  // Use effect to track signal dependencies inside the options factory
+  const fetchEntry = (entry: CacheEntry<T>, opts: CreateQueryOptions<T>, force = false) =>
+    executeQueryFetch(entry, {
+      fetcher: opts.fetcher,
+      retry: opts.retry ?? 3,
+      retryDelay: opts.retryDelay ?? defaultRetryDelay,
+      force,
+    });
+
+  // Track signal dependencies read inside optionsFn; re-run on key change.
   effect(() => {
-    // This call reads signals inside optionsFn — Angular tracks them
     const opts = optionsFn();
     const newKey = hashKey(opts.key);
 
     untracked(() => {
-      // Key changed → re-run the query
-      if (newKey !== currentKey) {
-        currentKey = newKey;
+      if (newKey === currentKey) return;
 
-        // Check if we have cached data for this key
-        const existing = cache.get<T>(opts.key);
-        if (existing) {
-          state.set(existing.state());
-          const staleTime = opts.staleTime ?? 0;
-          const { updatedAt } = existing.state();
-          if (Date.now() - updatedAt > staleTime) {
-            fetchData(opts, state);
-          }
-        } else {
-          state.set(createInitialState<T>());
-          cache.set(opts.key, state, opts.cacheTime ?? 5 * 60 * 1000);
-          fetchData(opts, state);
-        }
+      // Cancel the previous key's in-flight request before switching.
+      const previous = activeEntry();
+      previous?.abortController?.abort();
+
+      currentKey = newKey;
+      const entry = resolveEntry(opts);
+      activeEntry.set(entry);
+
+      const staleTime = opts.staleTime ?? 0;
+      const isStale = Date.now() - entry.state().updatedAt > staleTime;
+      if (entry.state().status === 'idle' || isStale) {
+        fetchEntry(entry, opts);
       }
     });
   });
 
+  const currentState = computed<QueryState<T>>(
+    () => activeEntry()?.state() ?? createInitialState<T>()
+  );
+
   return {
-    data: computed(() => state().data),
-    status: computed(() => state().status),
-    error: computed(() => state().error),
-    isLoading: computed(() => state().status === 'loading'),
-    isSuccess: computed(() => state().status === 'success'),
-    isError: computed(() => state().status === 'error'),
+    data: computed(() => currentState().data),
+    status: computed(() => currentState().status),
+    error: computed(() => currentState().error),
+    isLoading: computed(() => currentState().status === 'loading'),
+    isSuccess: computed(() => currentState().status === 'success'),
+    isError: computed(() => currentState().status === 'error'),
     refetch: async () => {
+      const entry = activeEntry();
+      if (!entry) return;
       const opts = untracked(() => optionsFn());
-      await fetchData(opts, state);
+      await fetchEntry(entry, opts, true);
     },
   };
 }

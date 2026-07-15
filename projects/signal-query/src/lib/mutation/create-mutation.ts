@@ -7,6 +7,7 @@ import {
 } from './types';
 import { QueryClient } from '../core/query-client';
 import { hashKey } from '../core/query-key';
+import { runWithRetry, defaultRetryDelay } from '../core/retry';
 
 function createInitialState<T>(): MutationState<T> {
   return {
@@ -22,6 +23,8 @@ export function createMutation<TInput, TOutput>(
   const client = inject(QueryClient);
   const cache = client.getCache();
   const strategy = options.concurrencyStrategy ?? 'merge';
+  const retry = options.retry ?? 0;
+  const retryDelay = options.retryDelay ?? defaultRetryDelay;
 
   const state = signal<MutationState<TOutput>>(
     createInitialState<TOutput>()
@@ -61,7 +64,12 @@ export function createMutation<TInput, TOutput>(
     }
 
     try {
-      const result = await options.mutationFn(input);
+      const result = await runWithRetry(
+        () => options.mutationFn(input),
+        retry,
+        retryDelay,
+        new AbortController().signal,
+      );
 
       if (!isActive()) return;
 
