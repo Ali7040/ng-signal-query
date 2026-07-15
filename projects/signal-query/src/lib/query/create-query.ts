@@ -2,7 +2,6 @@ import {
   signal,
   computed,
   inject,
-  WritableSignal,
   DestroyRef,
 } from '@angular/core';
 import {
@@ -11,7 +10,9 @@ import {
   QueryState,
 } from './types';
 import { QueryClient } from '../core/query-client';
-import { hashKey } from '../core/query-key';
+import { CacheEntry } from '../core/query-cache';
+import { executeQueryFetch } from '../core/fetch-query';
+import { defaultRetryDelay } from '../core/retry';
 
 function createInitialState<T>(): QueryState<T> {
   return {
@@ -29,54 +30,34 @@ export function createQuery<T>(
   const destroyRef = inject(DestroyRef);
   const cache = client.getCache();
 
-  const serializedKey = hashKey(options.key);
   const staleTime = options.staleTime ?? 0;
   const cacheTime = options.cacheTime ?? 5 * 60 * 1000;
   const refetchOnWindowFocus = options.refetchOnWindowFocus ?? true;
   const refetchOnReconnect = options.refetchOnReconnect ?? true;
   const refetchInterval = options.refetchInterval ?? 0;
+  const retry = options.retry ?? 3;
+  const retryDelay = options.retryDelay ?? defaultRetryDelay;
 
-  let state: WritableSignal<QueryState<T>>;
-
-  const existing = cache.get<T>(options.key);
-  if (existing) {
-    state = existing.state;
-  } else {
-    state = signal<QueryState<T>>(createInitialState<T>());
-    cache.set(options.key, state, cacheTime);
+  // Resolve (or create) the shared cache entry for this key.
+  let entry = cache.get<T>(options.key);
+  if (!entry) {
+    cache.set(options.key, signal<QueryState<T>>(createInitialState<T>()), cacheTime);
+    entry = cache.get<T>(options.key)!;
   }
+  const activeEntry: CacheEntry<T> = entry;
 
-  const isStale = () => {
-    const { updatedAt } = state();
-    return Date.now() - updatedAt > staleTime;
-  };
+  const isStale = () => Date.now() - activeEntry.state().updatedAt > staleTime;
 
-  const fetchData = async () => {
-    state.update(s => ({
-      ...s,
-      status: 'loading',
-      error: null,
-    }));
+  const fetchData = (force = false) =>
+    executeQueryFetch(activeEntry, {
+      fetcher: options.fetcher,
+      retry,
+      retryDelay,
+      force,
+    });
 
-    try {
-      const data = await options.fetcher();
-      state.set({
-        data,
-        error: null,
-        status: 'success',
-        updatedAt: Date.now(),
-      });
-    } catch (error) {
-      state.update(s => ({
-        ...s,
-        error,
-        status: 'error',
-      }));
-    }
-  };
-
-  // Initial fetch
-  if (state().status === 'idle' || isStale()) {
+  // Initial fetch — deduped against any concurrent subscriber on the same key.
+  if (activeEntry.state().status === 'idle' || isStale()) {
     fetchData();
   }
 
@@ -107,12 +88,12 @@ export function createQuery<T>(
   }
 
   return {
-    data: computed(() => state().data),
-    status: computed(() => state().status),
-    error: computed(() => state().error),
-    isLoading: computed(() => state().status === 'loading'),
-    isSuccess: computed(() => state().status === 'success'),
-    isError: computed(() => state().status === 'error'),
-    refetch: fetchData,
+    data: computed(() => activeEntry.state().data),
+    status: computed(() => activeEntry.state().status),
+    error: computed(() => activeEntry.state().error),
+    isLoading: computed(() => activeEntry.state().status === 'loading'),
+    isSuccess: computed(() => activeEntry.state().status === 'success'),
+    isError: computed(() => activeEntry.state().status === 'error'),
+    refetch: () => fetchData(true),
   };
 }

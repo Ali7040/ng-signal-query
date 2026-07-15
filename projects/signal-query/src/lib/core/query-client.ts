@@ -85,7 +85,7 @@ export class QueryClient {
     }
 
     try {
-      const data = await options.fetcher();
+      const data = await options.fetcher({ signal: new AbortController().signal });
       this.setQueryData<T>(options.key, data);
     } catch {
       // Silently fail — prefetch is best-effort

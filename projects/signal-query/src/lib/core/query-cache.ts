@@ -8,6 +8,19 @@ export interface CacheEntry<T = any> {
   createdAt: number;
   lastAccessedAt: number;
   cacheTime: number;
+
+  /**
+   * Monotonic counter incremented on every fetch. Results from a stale
+   * generation are discarded so out-of-order responses can't overwrite fresh
+   * data (see fetch-query.ts).
+   */
+  fetchGeneration: number;
+
+  /** The currently in-flight fetch, shared by concurrent subscribers (dedup). */
+  inFlight: Promise<void> | null;
+
+  /** Abort controller for the in-flight fetch, used to cancel stale requests. */
+  abortController: AbortController | null;
 }
 
 export class QueryCache {
@@ -34,6 +47,9 @@ export class QueryCache {
       createdAt: Date.now(),
       lastAccessedAt: Date.now(),
       cacheTime,
+      fetchGeneration: 0,
+      inFlight: null,
+      abortController: null,
     });
   }
 

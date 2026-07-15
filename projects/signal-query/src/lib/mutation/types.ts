@@ -1,4 +1,5 @@
 import { Signal } from '@angular/core';
+import { RetryValue, RetryDelayValue } from '../core/retry';
 
 /**
  * Controls how concurrent mutation calls are handled.
@@ -34,6 +35,18 @@ export interface CreateMutationOptions<TInput, TOutput> {
    * @default 'merge'
    */
   concurrencyStrategy?: MutationConcurrencyStrategy;
+
+  /**
+   * Number of retry attempts on failure (or a predicate).
+   * Unlike queries, mutations do **not** retry by default.
+   * @default 0
+   */
+  retry?: RetryValue;
+
+  /**
+   * Delay before each retry. Default: exponential backoff (1s, 2s, 4s … max 30s).
+   */
+  retryDelay?: RetryDelayValue;
 
   /**
    * Called before the mutation runs. Use `queryClient.setQueryData()`
