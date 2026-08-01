@@ -3,8 +3,17 @@ name: Publish to npm
 # Publishes @ali7040/ng-signal-query to the public npm registry whenever a
 # GitHub Release is published. Can also be triggered manually.
 #
-# Prerequisite: add a repository secret `NPM_TOKEN` (an npm *Automation* access
-# token) under Settings → Secrets and variables → Actions.
+# Authentication uses npm Trusted Publishing (OIDC) — there is no NPM_TOKEN
+# secret to manage, leak, or rotate. GitHub proves this workflow's identity to
+# npm directly.
+#
+# One-time setup on npmjs.com (package → Settings → Trusted Publisher):
+#   Publisher:         GitHub Actions
+#   Organization/user: Ali7040
+#   Repository:        ng-signal-query
+#   Workflow filename: publish-npm.yml
+#
+# Provenance is generated automatically under Trusted Publishing.
 on:
   release:
     types: [published]
@@ -12,7 +21,7 @@ on:
 
 permissions:
   contents: read
-  id-token: write # required for npm provenance
+  id-token: write # required for Trusted Publishing (OIDC) and provenance
 
 jobs:
   publish:
@@ -30,6 +39,10 @@ jobs:
           registry-url: https://registry.npmjs.org
           cache: npm
 
+      # Trusted Publishing requires npm >= 11.5.1; Node 22 ships with npm 10.x.
+      - name: Update npm
+        run: npm install -g npm@latest
+
       - name: Install dependencies
         run: npm ci
 
@@ -40,8 +53,4 @@ jobs:
         run: npx ng test signal-query --no-watch
 
       - name: Publish to npm
-        # Provenance links the package to this exact workflow run for supply-chain
-        # trust. If it ever fails on the repository URL, drop `--provenance`.
-        run: npm publish ./dist/signal-query --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish ./dist/signal-query --access public

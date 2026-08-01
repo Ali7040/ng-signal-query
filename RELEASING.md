@@ -5,26 +5,25 @@ CI when a GitHub Release is published. You no longer publish from your machine.
 
 ## One-time setup (repo owner)
 
-Add a repository secret named **`NPM_TOKEN`**:
+Publishing uses **npm Trusted Publishing (OIDC)** — there is **no token or secret
+to create, rotate, or leak**, and nothing that expires.
 
-1. Create an npm access token at <https://www.npmjs.com/settings/~/tokens>.
-   - **Granular token:** permissions **Read and write**, scoped to
-     `@ali7040/ng-signal-query`, with **Bypass 2FA** checked and no IP restrictions.
-   - **Classic → Automation** works too and never expires.
-2. In GitHub: *Settings → Secrets and variables → Actions → New repository secret*
-   (the **Secrets** tab — never *Variables*, which are stored in plaintext).
-   Name it `NPM_TOKEN` and paste the token.
+On <https://www.npmjs.com>, open the package →
+*Settings → Trusted Publisher → GitHub Actions*, and enter:
 
-### ⚠️ Token expiry
+| Field | Value |
+|-------|-------|
+| Organization or user | `Ali7040` |
+| Repository | `ng-signal-query` |
+| Workflow filename | `publish-npm.yml` |
+| Environment | *(leave empty)* |
 
-The current token is a 90-day granular token created **1 Aug 2026**, so it expires
-around **30 Oct 2026**.
+That's it. npm will then accept publishes **only** from this repository's
+`publish-npm.yml` workflow, and provenance is attached automatically.
 
-When it expires, `Publish to npm` fails with a `401 Unauthorized`. The fix is to
-generate a new token and update the `NPM_TOKEN` secret — no code change needed.
-
-> Set a calendar reminder ~1 week before expiry. To avoid this recurring, switch to
-> a Classic **Automation** token, which does not expire.
+> **Why not an access token?** npm explicitly warns against 2FA-bypass tokens for
+> CI. A token is a long-lived secret that can leak and (for granular tokens)
+> expires — silently breaking releases. OIDC has neither problem.
 
 ## Cutting a release
 
