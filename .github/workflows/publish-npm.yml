@@ -32,16 +32,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # `registry-url` is deliberately omitted. It makes setup-node write an
+      # .npmrc containing `_authToken=${NODE_AUTH_TOKEN}`; with no token in the
+      # environment npm sends an empty credential and fails with E404 instead of
+      # falling back to Trusted Publishing. The registry is set explicitly on the
+      # publish command instead.
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          registry-url: https://registry.npmjs.org
           cache: npm
 
       # Trusted Publishing requires npm >= 11.5.1; Node 22 ships with npm 10.x.
       - name: Update npm
-        run: npm install -g npm@latest
+        run: |
+          npm install -g npm@latest
+          npm --version
 
       - name: Install dependencies
         run: npm ci
