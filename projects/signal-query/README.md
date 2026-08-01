@@ -166,6 +166,37 @@ const processStep = createMutation({
 | `switch` | `switchMap` | Discard previous, keep latest |
 | `exhaust` | `exhaustMap` | Ignore new while running |
 
+### 3c. Retry & Cancellation (opt-in)
+
+Fetchers receive an `AbortSignal` so superseded requests are cancelled automatically:
+
+```typescript
+const users = createQuery({
+  key: ['users'],
+  fetcher: ({ signal }) => fetch('/api/users', { signal }).then(r => r.json()),
+});
+```
+
+Retries are **opt-in** — by default a failed request reports its error immediately:
+
+```typescript
+const users = createQuery({
+  key: ['users'],
+  fetcher: ({ signal }) => fetch('/api/users', { signal }).then(r => r.json()),
+  retry: 3,                          // default: 0 (no retries)
+  retryDelay: (attempt) => attempt * 1000, // default: 1s → 2s → 4s, max 30s
+});
+```
+
+`retry` also accepts a predicate for conditional retries:
+
+```typescript
+retry: (failureCount, error) => failureCount < 3 && !isAuthError(error),
+```
+
+Queries using the same key **share a single in-flight request**, so mounting several
+components that read `['users']` performs one fetch.
+
 ### 4. Infinite Queries
 
 ```typescript
