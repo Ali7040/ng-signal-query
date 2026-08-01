@@ -25,12 +25,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ali7040/ng-signal-query.git"
+    "url": "git+https://github.com/Ali7040/ng-signal-query.git"
   },
   "bugs": {
-    "url": "https://github.com/ali7040/ng-signal-query/issues"
+    "url": "https://github.com/Ali7040/ng-signal-query/issues"
   },
-  "homepage": "https://github.com/ali7040/ng-signal-query#readme",
+  "homepage": "https://github.com/Ali7040/ng-signal-query#readme",
   "funding": {
     "type": "github",
     "url": "https://github.com/sponsors/ali7040"
