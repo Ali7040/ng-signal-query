@@ -66,7 +66,7 @@ export function createSignalQuery<T>(
   const fetchEntry = (entry: CacheEntry<T>, opts: CreateQueryOptions<T>, force = false) =>
     executeQueryFetch(entry, {
       fetcher: opts.fetcher,
-      retry: opts.retry ?? 3,
+      retry: opts.retry ?? 0,
       retryDelay: opts.retryDelay ?? defaultRetryDelay,
       force,
     });

@@ -5,9 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.1.0]
+
+> **No breaking changes.** Upgrading from `0.0.2` requires no code changes.
+> New behavior (retry/backoff) is **opt-in**; defaults preserve existing behavior.
+
+### Fixed
+- **Race condition in queries** — a slow, older response could overwrite fresher
+  data in the cache. Fetches now carry a generation and only the latest one commits.
+- **Duplicate requests** — two components using the same query key fired two
+  network requests. Concurrent fetches for a key now share a single in-flight request.
+- **`createSignalQuery` cache divergence** — it kept a private copy of state instead
+  of sharing the cache entry, so `setQueryData()` and invalidation could be missed.
 
 ### Added
+- **Request cancellation** — fetchers receive a `QueryFunctionContext` with an
+  `AbortSignal`: `fetcher: ({ signal }) => fetch(url, { signal })`. A forced refetch
+  or a key change aborts the request it supersedes. Zero-argument fetchers still work.
+- **Retry with exponential backoff** (opt-in) — `retry` and `retryDelay` options on
+  queries and mutations. Defaults to `0` (no retries), matching previous behavior.
+  Set `retry: 3` to enable; the default delay is 1s → 2s → 4s, capped at 30s.
+- Exported `RetryValue`, `RetryDelayValue`, `QueryFunctionContext`, `defaultRetryDelay`,
+  and `AbortError`.
+- Backward-compatibility test suite pinning the pre-0.1.0 public behavior.
+
+### Added — MutationConcurrencyStrategy
 - **MutationConcurrencyStrategy** — new `concurrencyStrategy` option for `createMutation()` controlling how overlapping `mutate()` calls are handled.
   - `merge` (default): run all mutations in parallel (preserves existing behavior).
   - `concat`: queue mutations and execute one at a time, in order.

@@ -35,7 +35,7 @@ export function createQuery<T>(
   const refetchOnWindowFocus = options.refetchOnWindowFocus ?? true;
   const refetchOnReconnect = options.refetchOnReconnect ?? true;
   const refetchInterval = options.refetchInterval ?? 0;
-  const retry = options.retry ?? 3;
+  const retry = options.retry ?? 0;
   const retryDelay = options.retryDelay ?? defaultRetryDelay;
 
   // Resolve (or create) the shared cache entry for this key.

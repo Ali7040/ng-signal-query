@@ -1,6 +1,28 @@
 {
   "name": "@ali7040/ng-signal-query",
-  "version": "0.0.2",
+  "version": "0.1.0",
+  "description": "Signal-native server state management for Angular — queries, mutations, infinite scroll, caching, and SSR hydration built on Angular signals.",
+  "keywords": [
+    "angular",
+    "signals",
+    "query",
+    "server-state",
+    "data-fetching",
+    "cache",
+    "caching",
+    "mutation",
+    "infinite-query",
+    "pagination",
+    "ssr",
+    "hydration",
+    "optimistic-updates",
+    "async",
+    "state-management",
+    "angular-signals",
+    "tanstack-query"
+  ],
+  "author": "Ali Haider (https://github.com/ali7040)",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ali7040/ng-signal-query.git"
@@ -9,6 +31,10 @@
     "url": "https://github.com/ali7040/ng-signal-query/issues"
   },
   "homepage": "https://github.com/ali7040/ng-signal-query#readme",
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/ali7040"
+  },
   "publishConfig": {
     "access": "public"
   },

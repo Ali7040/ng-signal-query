@@ -30,7 +30,9 @@ export interface CreateQueryOptions<T> {
 
   /**
    * Number of retry attempts on failure (or a predicate).
-   * Default: 3. Use `false` / `0` to disable.
+   *
+   * Opt-in: defaults to `0` so a failed fetch reports its error immediately,
+   * preserving pre-0.1.0 behavior. Set `retry: 3` to enable backoff retries.
    */
   retry?: RetryValue;
 
