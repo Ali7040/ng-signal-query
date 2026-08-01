@@ -53,4 +53,13 @@ jobs:
         run: npx ng test signal-query --no-watch
 
       - name: Publish to npm
-        run: npm publish ./dist/signal-query --access public
+        # The repo's .npmrc pins the @ali7040 scope to GitHub Packages, and a
+        # project-level .npmrc outranks setup-node's registry-url. For a scoped
+        # package npm resolves `@scope:registry` ahead of `registry`, so the
+        # scoped key must be overridden explicitly or the publish targets the
+        # wrong registry and fails with ENEEDAUTH.
+        run: |
+          npm publish ./dist/signal-query \
+            --access public \
+            --registry=https://registry.npmjs.org \
+            --@ali7040:registry=https://registry.npmjs.org
