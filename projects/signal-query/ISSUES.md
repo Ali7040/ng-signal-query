@@ -331,11 +331,39 @@ Button); we are packaging it for our library.
 
 ---
 
+### E8. Marble diagram generator + interactive playground ⭐ ([#14](https://github.com/Ali7040/ng-signal-query/issues/14))
+**Origin:** the v0.1.0 launch post included an animated marble diagram of the four
+concurrency strategies. The top comment was *"Always looking for good ways to
+illustrate rxjs to people, this is very cool."*
+
+**Part A — open-source the generator.** The diagram is an HTML page rendered to
+frames with headless Chrome and stitched with ffmpeg. Ship it as `tools/marble/`,
+generic enough to render any operator. Document the platform constraints we hit
+(LinkedIn needs ≥75 KB and 10–60 fps, and does not animate GIFs; Reddit does).
+
+**Part B — interactive playground.** Place source events on a timeline, pick an
+operator (`mergeMap`/`concatMap`/`switchMap`/`exhaustMap`), watch the output
+recompute live, export GIF/MP4 or a permalink. Each operator maps to its
+`concurrencyStrategy` equivalent with a copyable snippet.
+
+**Why it outranks a landing page:** RxJS learners vastly outnumber people shopping
+for an Angular query library, and teachers *link to* tools. Every diagram it
+produces carries our name. Zero backend, so hosting is free and static.
+
+**Acceptance:** generator produces a GIF and a platform-valid MP4 from a schedule
+definition; playground supports all four operators with shareable URLs; linked
+from README and docs.
+
+> Ship Part A first — it is mostly moving existing code, and validates interest cheaply.
+
+---
+
 ## Suggested execution order
 
-1. **A1, A2, A3, A4** — fix the foundation (correctness).
+1. ✅ **A1, A2, A3, A4** — foundation fixed, shipped in 0.1.0.
 2. **B1, B2, B6** — the parity features users hit first.
-3. **D1** — ship the streaming query and demo it (the differentiator).
-4. **E1** — landing page with the comparison table.
-5. **D2, D3** — semantic cache + AI query wrapper.
-6. Everything else by priority.
+3. **E8 (Part A)** — cheap, and the launch showed there is demand.
+4. **D1** — ship the streaming query and demo it (the differentiator).
+5. **E1** — landing page with the comparison table.
+6. **D2, D3** — semantic cache + AI query wrapper.
+7. Everything else by priority.
