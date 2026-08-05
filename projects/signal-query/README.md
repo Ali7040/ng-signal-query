@@ -8,6 +8,11 @@
 
 A powerful, type-safe querying library for Angular applications built with signals. Manage server state, infinite queries, mutations, and caching with elegance and performance.
 
+**📖 [Docs and interactive playground →](https://ali7040.github.io/ng-signal-query-site/)**
+
+Try the four mutation concurrency strategies live: place calls on a timeline and
+watch `merge`, `concat`, `switch` and `exhaust` resolve them.
+
 ## ✨ Features
 
 - 🚀 **Signal-Driven Architecture** - Leverage Angular signals for reactive state management
@@ -330,9 +335,9 @@ export class AppComponent {
 
 Try the library in action:
 
-- **StackBlitz Demo**: [Coming Soon]
-- **CodeSandbox**: [Coming Soon]
-- **Documentation**: [https://github.com/ali7040/ng-signal-query](https://github.com/ali7040/ng-signal-query)
+- **Concurrency playground**: [ali7040.github.io/ng-signal-query-site](https://ali7040.github.io/ng-signal-query-site/#playground) — add calls to a timeline, change the request duration, and see how each strategy resolves them
+- **Comparison with TanStack Query**: [what this does differently, and what it doesn't do yet](https://ali7040.github.io/ng-signal-query-site/#compare)
+- **Repository**: [github.com/Ali7040/ng-signal-query](https://github.com/Ali7040/ng-signal-query)
 
 ## 🤝 Contributing
 

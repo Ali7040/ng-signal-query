@@ -1,68 +1,95 @@
-# NgSignalQuery
+# ng-signal-query
 
+[![npm version](https://img.shields.io/npm/v/@ali7040/ng-signal-query?style=flat-square)](https://www.npmjs.com/package/@ali7040/ng-signal-query)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](./projects/signal-query/LICENSE)
+[![Angular](https://img.shields.io/badge/Angular-21-red.svg?style=flat-square)](https://angular.dev/)
 [![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-lightpink?style=flat-square)](https://github.com/sponsors/ali7040)
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.1.3.
+Server state for Angular, built on signals. Queries, mutations, infinite scroll,
+caching and SSR hydration — with no observer layer underneath, because the cache
+entry *is* a signal.
 
-## Development server
-
-To start a local development server, run:
-
-```bash
-ng serve
-```
-
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+**📖 [Docs and interactive playground →](https://ali7040.github.io/ng-signal-query-site/)**
 
 ```bash
-ng generate component component-name
+npm i @ali7040/ng-signal-query
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## What's distinctive
+
+**Mutation concurrency strategies.** Overlapping `mutate()` calls resolve the way
+you choose, with semantics borrowed from the RxJS flattening operators:
+
+```ts
+// Double-click proof. No disabled flag, no debounce.
+const submit = createMutation({
+  mutationFn: (order: Order) => api.place(order),
+  concurrencyStrategy: 'exhaust',
+});
+```
+
+| Strategy | RxJS | Behaviour |
+|----------|------|-----------|
+| `merge` | `mergeMap` | Every call runs, in parallel (default) |
+| `concat` | `concatMap` | Queued, and kept in order |
+| `switch` | `switchMap` | Latest wins, earlier discarded |
+| `exhaust` | `exhaustMap` | First wins, the rest ignored |
+
+[See them run on a live timeline →](https://ali7040.github.io/ng-signal-query-site/#playground)
+
+**Request cancellation.** Every fetcher receives an `AbortSignal`, and superseded
+requests are actually aborted:
+
+```ts
+const users = createQuery({
+  key: ['users'],
+  fetcher: ({ signal }) => fetch('/api/users', { signal }).then(r => r.json()),
+});
+```
+
+Queries sharing a key also share a single in-flight request.
+
+## How it compares to TanStack Query
+
+TanStack Query is the reference implementation for this problem and, for most
+teams, still the right answer. The
+[comparison table](https://ali7040.github.io/ng-signal-query-site/#compare) is
+honest about both directions — including `enabled`, `select`, `placeholderData`,
+persistence and offline support, which it has and this does not yet.
+
+## Documentation
+
+- [Full API documentation](./projects/signal-query/README.md)
+- [Guides and details](./projects/signal-query/DOCS.md)
+- [Changelog](./projects/signal-query/CHANGELOG.md)
+- [Roadmap](./projects/signal-query/ROADMAP.md) · [Issue backlog](./projects/signal-query/ISSUES.md)
+- [Releasing](./RELEASING.md)
+
+## Contributing
+
+Issues and pull requests are welcome — several are tagged
+[`good first issue`](https://github.com/Ali7040/ng-signal-query/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
+See the [contributing guide](./projects/signal-query/CONTRIBUTING.md).
+
+## Repository layout
+
+```
+projects/signal-query/     the published library
+projects/signal-query/examples/   runnable examples
+src/                       demo application shell
+```
+
+Common commands:
 
 ```bash
-ng generate --help
+npm start          # serve the demo app
+npm run build:lib  # build the publishable library
+npm test           # run the test suite
 ```
 
-## Building
+The website lives in a separate repository:
+[ng-signal-query-site](https://github.com/Ali7040/ng-signal-query-site).
 
-To build the project run:
+## License
 
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
-
-## Sponsor This Project
-
-If this project helps you, you can support future development through GitHub Sponsors:
-
-- [Sponsor on GitHub](https://github.com/sponsors/ali7040)
-
+MIT — see [LICENSE](./LICENSE).
