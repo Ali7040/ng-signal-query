@@ -37,6 +37,10 @@ import { CacheEntry } from '../core/query-cache';
                   </span>
                   <span class="sqd-time">{{ formatTime(entry.state().updatedAt) }}</span>
                 </div>
+                <div class="sqd-actions">
+                  <button class="sqd-btn sqd-btn-refetch" (click)="refetchEntry(entry)">Refetch</button>
+                  <button class="sqd-btn sqd-btn-invalidate" (click)="invalidateEntry(entry)">Invalidate</button>
+                </div>
                 <details class="sqd-data">
                   <summary>Data</summary>
                   <pre>{{ formatData(entry.state().data) }}</pre>
@@ -116,6 +120,16 @@ import { CacheEntry } from '../core/query-cache';
       cursor: pointer;
       font-size: 11px;
     }
+
+    .sqd-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .sqd-btn-refetch { background: #0f3460; }
+    .sqd-btn-invalidate { background: #5a1a1a; }
+    .sqd-btn:hover { opacity: 0.85; }
 
     .sqd-entry {
       padding: 8px;
@@ -226,6 +240,16 @@ export class SignalQueryDevtoolsComponent implements OnInit, OnDestroy {
     const diff = Math.round((Date.now() - ts) / 1000);
     if (diff < 60) return `${diff}s ago`;
     return `${Math.round(diff / 60)}m ago`;
+  }
+
+  invalidateEntry(entry: CacheEntry) {
+    this.client.invalidate(entry.key);
+    this.refresh();
+  }
+
+  refetchEntry(entry: CacheEntry) {
+    this.client.refetchQueries(entry.key);
+    this.refresh();
   }
 
   isStale(entry: CacheEntry): boolean {
