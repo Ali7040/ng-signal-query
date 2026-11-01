@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "node init && ng serve",
-    "build": "node init && ng build",
-    "build:lib": "node init && ng build signal-query",
+    "start": "ng serve",
+    "build": "ng build",
+    "build:lib": "ng build signal-query",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "release:npm": "npm run build:lib && npm publish ./dist/signal-query --access public",
